@@ -1,0 +1,9 @@
+﻿node_modules/
+dist/
+dist-ssr/
+**/node_modules/
+.env
+.env.local
+*.log
+coverage/
+make-git-history.ps1
