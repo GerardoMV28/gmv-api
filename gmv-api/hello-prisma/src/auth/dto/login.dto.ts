@@ -1,15 +1,23 @@
 import { Transform } from 'class-transformer';
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  LOGIN_PASSWORD_MAX,
+  USERNAME_MAX,
+  USERNAME_MIN,
+  USERNAME_REGEX,
+  USERNAME_MESSAGE,
+} from '../../common/validation/constants';
 
 export class LoginDto {
   @IsString()
-  @MinLength(3)
-  @MaxLength(150)
+  @MinLength(USERNAME_MIN)
+  @MaxLength(USERNAME_MAX)
+  @Matches(USERNAME_REGEX, { message: USERNAME_MESSAGE })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   username!: string;
 
   @IsString()
   @MinLength(1)
-  @MaxLength(200)
+  @MaxLength(LOGIN_PASSWORD_MAX)
   password!: string;
 }

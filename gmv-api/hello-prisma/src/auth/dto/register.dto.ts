@@ -7,30 +7,42 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-
-const PASSWORD_REGEX =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,128}$/;
-
-const SAFE_TEXT = /^[^<>]*$/;
+import {
+  EMAIL_MAX,
+  PASSWORD_MAX,
+  PASSWORD_MESSAGE,
+  PASSWORD_MIN,
+  PASSWORD_REGEX,
+  PERSON_NAME_MAX,
+  PERSON_NAME_MESSAGE,
+  PERSON_NAME_MIN,
+  PERSON_NAME_REGEX,
+  USERNAME_MAX,
+  USERNAME_MESSAGE,
+  USERNAME_MIN,
+  USERNAME_REGEX,
+} from '../../common/validation/constants';
 
 export class RegisterDto {
   @IsString()
-  @MaxLength(200)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
+  @MinLength(PERSON_NAME_MIN)
+  @MaxLength(PERSON_NAME_MAX)
+  @Matches(PERSON_NAME_REGEX, { message: PERSON_NAME_MESSAGE })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   name!: string;
 
   @IsString()
-  @MaxLength(205)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
+  @MinLength(PERSON_NAME_MIN)
+  @MaxLength(PERSON_NAME_MAX)
+  @Matches(PERSON_NAME_REGEX, { message: PERSON_NAME_MESSAGE })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   lastname!: string;
 
   @IsString()
-  @MinLength(3)
-  @MaxLength(150)
-  @Matches(/^[a-zA-Z0-9_.-]+$/, {
-    message: 'Usuario solo puede contener letras, números, _ . y -',
+  @MinLength(USERNAME_MIN)
+  @MaxLength(USERNAME_MAX)
+  @Matches(USERNAME_REGEX, {
+    message: USERNAME_MESSAGE,
   })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   username!: string;
@@ -44,13 +56,14 @@ export class RegisterDto {
         : value,
   )
   @IsEmail()
-  @MaxLength(150)
+  @MaxLength(EMAIL_MAX)
   email?: string;
 
   @IsString()
+  @MinLength(PASSWORD_MIN)
+  @MaxLength(PASSWORD_MAX)
   @Matches(PASSWORD_REGEX, {
-    message:
-      'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+    message: PASSWORD_MESSAGE,
   })
   password!: string;
 }

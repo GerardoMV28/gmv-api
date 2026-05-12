@@ -5,30 +5,52 @@ import {
   IsString,
   Matches,
   MaxLength,
+  MinLength,
+  ValidateIf,
 } from 'class-validator';
+import {
+  EMAIL_MAX,
+  PERSON_NAME_MAX,
+  PERSON_NAME_MESSAGE,
+  PERSON_NAME_MIN,
+  PERSON_NAME_REGEX,
+} from '../../common/validation/constants';
 
-const SAFE_TEXT = /^[^<>]*$/;
+function trimOrUndef(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string') return undefined;
+  const t = value.trim();
+  return t === '' ? undefined : t;
+}
 
 export class UpdateProfileDto {
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
   @IsString()
-  @MaxLength(200)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MinLength(PERSON_NAME_MIN)
+  @MaxLength(PERSON_NAME_MAX)
+  @Matches(PERSON_NAME_REGEX, { message: PERSON_NAME_MESSAGE })
+  @Transform(({ value }) => trimOrUndef(value))
   name?: string;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
   @IsString()
-  @MaxLength(205)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MinLength(PERSON_NAME_MIN)
+  @MaxLength(PERSON_NAME_MAX)
+  @Matches(PERSON_NAME_REGEX, { message: PERSON_NAME_MESSAGE })
+  @Transform(({ value }) => trimOrUndef(value))
   lastname?: string;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
   @IsEmail()
-  @MaxLength(150)
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @MaxLength(EMAIL_MAX)
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) return undefined;
+    if (typeof value !== 'string') return value;
+    const t = value.trim().toLowerCase();
+    return t === '' ? undefined : t;
+  })
   email?: string;
 }

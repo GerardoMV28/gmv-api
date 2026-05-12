@@ -6,23 +6,42 @@ import {
   IsString,
   Matches,
   MaxLength,
+  MinLength,
+  ValidateIf,
 } from 'class-validator';
+import {
+  TASK_DESC_MAX,
+  TASK_DESC_MIN,
+  TASK_NAME_MAX,
+  TASK_NAME_MIN,
+  TASK_TEXT_MESSAGE,
+  TASK_TEXT_REGEX,
+} from '../../common/validation/constants';
 
-const SAFE_TEXT = /^[^<>]*$/;
+function trimOrUndef(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string') return undefined;
+  const t = value.trim();
+  return t === '' ? undefined : t;
+}
 
 export class UpdateTaskDto {
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
   @IsString()
-  @MaxLength(250)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MinLength(TASK_NAME_MIN)
+  @MaxLength(TASK_NAME_MAX)
+  @Matches(TASK_TEXT_REGEX, { message: TASK_TEXT_MESSAGE })
+  @Transform(({ value }) => trimOrUndef(value))
   name?: string;
 
   @IsOptional()
+  @ValidateIf((_, v) => v !== undefined && v !== null && String(v).trim() !== '')
   @IsString()
-  @MaxLength(200)
-  @Matches(SAFE_TEXT, { message: 'Caracteres no permitidos' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MinLength(TASK_DESC_MIN)
+  @MaxLength(TASK_DESC_MAX)
+  @Matches(TASK_TEXT_REGEX, { message: TASK_TEXT_MESSAGE })
+  @Transform(({ value }) => trimOrUndef(value))
   description?: string;
 
   @IsOptional()
