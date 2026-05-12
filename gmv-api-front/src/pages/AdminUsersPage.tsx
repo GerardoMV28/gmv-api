@@ -1,11 +1,12 @@
 import { type FormEvent, useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
 import { useAuth } from '../auth/AuthContext';
 import type { PublicUser, RolOption } from '../types';
 
 export function AdminUsersPage() {
-  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading: authLoading, logout } = useAuth();
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [roles, setRoles] = useState<RolOption[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +41,11 @@ export function AdminUsersPage() {
         method: 'PATCH',
         body: JSON.stringify({ rolId }),
       });
+      if (user != null && userId === user.id) {
+        await logout();
+        navigate('/login', { replace: true });
+        return;
+      }
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo cambiar el rol');
@@ -55,8 +61,8 @@ export function AdminUsersPage() {
 
   if (authLoading) {
     return (
-      <div className="auth-page">
-        <p>Cargando…</p>
+      <div className="loading-screen" role="status">
+        <span>Cargando…</span>
       </div>
     );
   }

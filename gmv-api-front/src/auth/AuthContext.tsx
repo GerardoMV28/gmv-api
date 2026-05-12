@@ -7,7 +7,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { api } from '../lib/api';
+import {
+  api,
+  clearServerSessionCookie,
+  setUnauthorizedCallback,
+} from '../lib/api';
 import type { UserMe } from '../types';
 
 type AuthState = {
@@ -43,8 +47,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    setUnauthorizedCallback(() => {
+      void clearServerSessionCookie();
+      setUser(null);
+    });
+    return () => setUnauthorizedCallback(null);
+  }, []);
+
+  useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  /** Si la cookie/JWT se altera o caduca con la pestaña abierta, volver a validar sin esperar a otra acción. */
+  useEffect(() => {
+    if (!user) return;
+
+    let debounceTimer: number | undefined;
+
+    const recheck = () => {
+      void refresh();
+    };
+
+    const scheduleRecheck = () => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(recheck, 300);
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') scheduleRecheck();
+    };
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', scheduleRecheck);
+
+    const intervalMs = 2000;
+    const intervalId = window.setInterval(recheck, intervalMs);
+
+    return () => {
+      window.clearTimeout(debounceTimer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', scheduleRecheck);
+      window.clearInterval(intervalId);
+    };
+  }, [user, refresh]);
 
   const login = useCallback(async (username: string, password: string) => {
     await api<UserMe>('/auth/login', {
@@ -72,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await api('/auth/logout', { method: 'POST' });
+    await clearServerSessionCookie();
     setUser(null);
   }, []);
 

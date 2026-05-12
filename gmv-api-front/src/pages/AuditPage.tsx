@@ -40,8 +40,8 @@ export function AuditPage() {
 
   if (authLoading) {
     return (
-      <div className="auth-page">
-        <p>Cargando…</p>
+      <div className="loading-screen" role="status">
+        <span>Cargando…</span>
       </div>
     );
   }
@@ -56,8 +56,11 @@ export function AuditPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page page-audit">
       <h1>Auditoría</h1>
+      <p className="muted-hint">
+        Por seguridad no se muestra la ruta técnica del servidor; solo el tipo de evento y el detalle.
+      </p>
       {error ? <p className="error">{error}</p> : null}
       <form className="card filters" onSubmit={onFilter}>
         <div className="row wrap">
@@ -101,7 +104,6 @@ export function AuditPage() {
               <th>Evento</th>
               <th>Severidad</th>
               <th>Usuario</th>
-              <th>Ruta</th>
               <th>Detalle</th>
             </tr>
           </thead>
@@ -112,7 +114,6 @@ export function AuditPage() {
                 <td>{l.eventType}</td>
                 <td>{l.severity}</td>
                 <td>{l.sesion_id ?? '—'}</td>
-                <td>{l.path}</td>
                 <td>{l.error}</td>
               </tr>
             ))}
